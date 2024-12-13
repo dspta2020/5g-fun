@@ -1,0 +1,6 @@
+*.pdf
+*.png
+*.md
+
+!README.md
+/venv
