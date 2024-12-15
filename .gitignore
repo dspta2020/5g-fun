@@ -3,4 +3,7 @@
 *.md
 
 !README.md
+
+# directories to ignore
 /venv
+__pycache__
