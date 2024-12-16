@@ -1,8 +1,8 @@
+import time
+
 import numpy as np 
 import scipy
 import matplotlib.pyplot as plt
-import scipy.constants
-
 
 from ssb_testing import get_pss_symbols, make_pss_waveform, make_resource_grid, get_pss_inds, rg_to_waveform
 from freq_to_gscn import freq_to_gscn
@@ -110,8 +110,8 @@ def main():
     # ifft
     filtered_data = scipy.fft.ifft(filtered_data_F, n=len(filtered_data_F), axis=0)
 
-    plt.plot(abs(filtered_data))
-    plt.show()
+    # plt.plot(abs(filtered_data))
+    # plt.show()
 
 
 # gonna add a second main for messing around
@@ -222,7 +222,12 @@ if __name__ == "__main__":
     from pathlib import Path
 
     print(f"Running File: {Path(__file__).name}")
+
+    start_time = time.perf_counter()
     main()
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time:.6f} seconds")
     
     # not going to run for now .. just looks at a resampled match filter process
     # main2()
