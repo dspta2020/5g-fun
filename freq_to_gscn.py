@@ -82,14 +82,14 @@ def freq_to_gscn(freq_list):
             # calculate the approximate period
             nth_period = offset_freq // 1.2e6
 
-            # wrap around the interval [0,3)
+            # wrap around the interval [0,1.2e6)
             relative_phase = offset_freq % 1.2e6
 
             # make two peice-wise linear function 
             steep_slope = 1e-5
             shallow_slope = 1e-6
 
-            # transition between the two peices is at a relative phase of 2
+            # transition between the two peices is at a relative phase of 0.2e6
             if relative_phase <= 0.2e6:
                 results_list.append(relative_phase * steep_slope + nth_period * 3 + 2)
             else:

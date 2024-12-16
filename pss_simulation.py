@@ -1,6 +1,7 @@
 import numpy as np 
 import scipy
 import matplotlib.pyplot as plt
+import scipy.constants
 
 
 from ssb_testing import get_pss_symbols, make_pss_waveform, make_resource_grid, get_pss_inds, rg_to_waveform
@@ -83,6 +84,35 @@ def main():
         plt.title(f'PSS; fc = {fc*1e-6} MHz; fs = {fs_new*1e-6} MHz; Offset {target_offset*1e-6} MHz')
         plt.axhline(target_offset*1e-6, linewidth=2, color='r')
         plt.show()
+
+    # now ill make a match filter at the data rate
+    mu = 0
+    subcarrier_spacing = 15e3 * 2**mu
+    nFFT = int(fs_new / subcarrier_spacing)
+    match_filter = make_pss_waveform(Nid_2=0, nFFT=nFFT)
+
+    # how many offsets do we need to check based on the GSCNs available in our band
+    num_gscn_channels = len(freq_list)
+    
+    # so now we have our match filter bank and one of them should pop for the PSS we made and shifted
+    Lo_base = np.exp(1j * 2 * scipy.constants.pi * (gscn_offsets).reshape(-1,1).T* np.arange(match_filter.shape[0]).reshape(-1,1) / fs_new)
+    filter_bank = np.tile(match_filter, (1, num_gscn_channels))
+    filter_bank = Lo_base * filter_bank
+
+    # now we need to do the match filter process
+    waveform_F = scipy.fft.fft(waveform_resampled_mixed, n=len(waveform_resampled_mixed), axis=0)
+    filter_bank_F = scipy.fft.fft(filter_bank, n=len(waveform_resampled_mixed), axis=0)
+    waveform_array_F = np.tile(waveform_F, (1, filter_bank.shape[1]))
+
+    # so here is where we do the actual processing
+    filtered_data_F = waveform_array_F * np.conjugate(filter_bank_F)
+
+    # ifft
+    filtered_data = scipy.fft.ifft(filtered_data_F, n=len(filtered_data_F), axis=0)
+
+    plt.plot(abs(filtered_data))
+    plt.show()
+
 
 # gonna add a second main for messing around
 def main2():
@@ -187,11 +217,12 @@ def main2():
     plt.show()
 
 
-
 if __name__ == "__main__":
 
     from pathlib import Path
 
     print(f"Running File: {Path(__file__).name}")
-    # main()
-    main2()
+    main()
+    
+    # not going to run for now .. just looks at a resampled match filter process
+    # main2()
