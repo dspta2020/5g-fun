@@ -16,7 +16,7 @@ def plot_spectrogram(waveform, fs, symbol_time, window_size):
     mag = np.log10(stft.spectrogram(waveform.flatten()))
     freqs = np.arange(-stft.f_pts/2, stft.f_pts/2) * (fs/stft.f_pts)
 
-    plt.pcolormesh(np.linspace(0, symbol_time*14, mag.shape[1]), freqs*1e-6, scipy.fft.fftshift(mag, axes=0), shading='auto')
+    plt.pcolormesh(np.linspace(0, symbol_time*14, mag.shape[1]), freqs*1e-6, mag, shading='auto')
     for nth_symbol in range(14):
         plt.axvline(symbol_time*nth_symbol, linewidth=2, color='r')
 
@@ -52,9 +52,9 @@ def main():
     half_zeros_to_pad = int(zeros_to_pad // 2)
 
     # zero-pad the spectrum and then ifft and calculate the approximate true fs
-    waveform_F = scipy.fft.fft(waveform, n=len(waveform), axis=0)
+    waveform_F = scipy.fft.fftshift(scipy.fft.fft(waveform, n=len(waveform), axis=0), axes=0)
     waveform_F_padded = np.pad(waveform_F, pad_width=((half_zeros_to_pad, half_zeros_to_pad),(0,0)), mode='constant', constant_values=0)
-    waveform_resampled = scipy.fft.ifft(waveform_F_padded, n=len(waveform_F_padded), axis=0)
+    waveform_resampled = scipy.fft.ifft(scipy.fft.ifftshift(waveform_F_padded, axes=0), n=len(waveform_F_padded), axis=0)
     fs_new = len(waveform_resampled) / (len(waveform) / fs_original)
 
     # make up a center freq around some nr bands
@@ -79,7 +79,7 @@ def main():
     waveform_resampled_mixed = waveform_resampled * Lo.reshape(-1,1)
 
     # this is a good spot for plotting if you want right here
-    if 0:
+    if 1:
         plot_spectrogram(waveform=waveform_resampled_mixed, fs=fs_new, symbol_time=symbol_time, window_size=256)
         plt.title(f'PSS; fc = {fc*1e-6} MHz; fs = {fs_new*1e-6} MHz; Offset {target_offset*1e-6} MHz')
         plt.axhline(target_offset*1e-6, linewidth=2, color='r')
@@ -110,8 +110,18 @@ def main():
     # ifft
     filtered_data = scipy.fft.ifft(filtered_data_F, n=len(filtered_data_F), axis=0)
 
-    # plt.plot(abs(filtered_data))
-    # plt.show()
+    if 0:
+        fig, [ax1, ax2] = plt.subplots(2,1,tight_layout=True)
+        ax1.plot(np.arange(len(waveform_resampled_mixed))/fs_new, np.real(waveform_resampled_mixed),'k')
+        ax1.plot(np.arange(len(match_filter))/fs_new, np.real(match_filter),'r')
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('Amplitude (Reals)')
+
+        ax2.plot(abs(filtered_data))
+        ax2.set_xlabel('Lag')
+        ax2.set_ylabel('Correlation')
+
+    plt.show()
 
 
 # gonna add a second main for messing around
@@ -155,7 +165,7 @@ def main2():
     fc = 770e6
     bw = fs_new // 2
 
-    fig, [ax1, ax2] = plt.subplots(2,1,tight_layout=True)
+    _, [ax1, ax2] = plt.subplots(2,1,tight_layout=True)
 
     # okay so we have this resampled PSS waveform here...
     # now say I wanted to do the match filtering process...

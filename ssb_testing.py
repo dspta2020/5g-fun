@@ -36,7 +36,7 @@ def make_pss_waveform(Nid_2=0, nFFT=4096):
     symbols_padded = np.pad(symbols, pad_width=(half_zeros_to_pad, half_zeros_to_pad+1), mode='constant', constant_values=0)
 
     # ifft 
-    pss_waveform = scipy.fft.ifft(symbols_padded, n=len(symbols_padded), axis = 0) * nFFT
+    pss_waveform = scipy.fft.ifft(scipy.fft.ifftshift(symbols_padded, axes=0), n=len(symbols_padded), axis = 0) * nFFT
 
     return pss_waveform.reshape(-1,1)
 
@@ -88,7 +88,7 @@ def make_sss_waveform(Nid_1=0, Nid_2=0, nFFT=4096):
     symbols_padded = np.pad(symbols, pad_width=(half_zeros_to_pad, half_zeros_to_pad+1), mode='constant', constant_values=0)
 
     # ifft 
-    sss_waveform = scipy.fft.ifft(symbols_padded, n=len(symbols_padded), axis = 0) * nFFT
+    sss_waveform = scipy.fft.ifft(scipy.fft.ifftshift(symbols_padded, axes=0), n=len(symbols_padded), axis = 0) * nFFT
 
     return sss_waveform.reshape(-1,1)
 
@@ -137,7 +137,7 @@ def rg_to_waveform(rg, mu=0, nFFT=4096):
     rg_to_iFFT = np.pad(rg, pad_width=((0, 0), (half_zeros_to_pad, half_zeros_to_pad)), mode='constant', constant_values=0)
 
     # ifft 
-    waveform = np.fft.ifft(rg_to_iFFT, axis=1).reshape(-1,1) * nFFT
+    waveform = np.fft.ifft(scipy.fft.ifftshift(rg_to_iFFT, axes=1), axis=1).reshape(-1,1) * nFFT
 
     return waveform, sampling_rate, symbol_time
 
@@ -182,10 +182,6 @@ def main():
     # plot the resource grid of a single slot
     plot_resource_grid(rg=rg)
 
-    # # numerology 
-    # mu = 0
-    # nFFT = 4096
-
     # generate the waveform 
     waveform, sampling_rate, symbol_time = rg_to_waveform(rg=rg, mu=0, nFFT=4096)
     # say i want to add some noise as well
@@ -207,7 +203,7 @@ def main():
         freqs = np.arange(-stft.f_pts/2, stft.f_pts/2) * (sampling_rate/stft.f_pts)
         # time_vec = np.arange(0, stft.T, stft.delta_t)
 
-        plt.pcolormesh(np.linspace(0, symbol_time*14, mag.shape[1]), freqs*1e-6, scipy.fft.fftshift(mag, axes=0), shading='auto')
+        plt.pcolormesh(np.linspace(0, symbol_time*14, mag.shape[1]), freqs*1e-6, mag, shading='auto')
         for nth_symbol in range(14):
             plt.axvline(symbol_time*nth_symbol, linewidth=2, color='r')
 
@@ -231,9 +227,8 @@ def main():
         plt.show()
 
     # for now we'll match filter in the freq domain
-    waveform_F = scipy.fft.fft(waveform, n=len(waveform), axis=0)
-    match_filt_F = scipy.fft.fft(match_filt, n=len(waveform), axis=0)
-
+    waveform_F = scipy.fft.fftshift(scipy.fft.fft(waveform, n=len(waveform), axis=0), axes=0)
+    match_filt_F = scipy.fft.fftshift(scipy.fft.fft(match_filt, n=len(waveform), axis=0), axes=0)
 
     # if you want to plot the spectra of the waveform and match filter
     if 1: # plot_flag:
