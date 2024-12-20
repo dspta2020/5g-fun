@@ -5,8 +5,7 @@ import scipy
 import matplotlib.pyplot as plt
 
 from ssb_testing import get_pss_symbols, make_pss_waveform, make_resource_grid, get_pss_inds, rg_to_waveform
-from freq_to_gscn import freq_to_gscn
-from gscn_to_freq import gscn_to_freq
+from FreqGscnMapper import FreqGscnMapper
 
 def plot_spectrogram(waveform, fs, symbol_time, window_size):
 
@@ -64,9 +63,10 @@ def main():
     lower_limit = fc - bw
 
     # the PSS is transmitted on these GSCN frequencies so search the frequency space for candidate channels
+    mapper = FreqGscnMapper()
     freq_search_space = np.arange(lower_limit, upper_limit, 0.1e6)
-    gscn_list = np.round(freq_to_gscn(freq_list=freq_search_space))
-    freq_list = np.unique(gscn_to_freq(gscn_list=gscn_list))
+    gscn_list = np.round(mapper.freq_to_gscn(freq_list=freq_search_space))
+    freq_list = np.unique(mapper.gscn_to_freq(gscn_list=gscn_list))
     
     # now we calculate the offset from DC 
     gscn_offsets = freq_list - fc
