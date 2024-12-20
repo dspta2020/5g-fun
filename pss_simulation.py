@@ -79,7 +79,7 @@ def main():
     waveform_resampled_mixed = waveform_resampled * Lo.reshape(-1,1)
 
     # this is a good spot for plotting if you want right here
-    if 1:
+    if 0:
         plot_spectrogram(waveform=waveform_resampled_mixed, fs=fs_new, symbol_time=symbol_time, window_size=256)
         plt.title(f'PSS; fc = {fc*1e-6} MHz; fs = {fs_new*1e-6} MHz; Offset {target_offset*1e-6} MHz')
         plt.axhline(target_offset*1e-6, linewidth=2, color='r')

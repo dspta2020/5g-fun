@@ -7,3 +7,5 @@
 # directories to ignore
 /venv
 __pycache__
+/scratch
+/articles
