@@ -1,7 +1,10 @@
+# ignore the other files around
 *.pdf
 *.png
 *.md
+*.html
 
+# keep the readme
 !README.md
 
 # directories to ignore

@@ -1,28 +1,19 @@
-from pathlib import Path
-
-import numpy as np
-import matplotlib.pyplot as plt
-
 class DataReader:
 
     def __init__(self, path_to_file:Path):
         '''
         Reads in the 
         '''
+        self.path = path_to_file
+
         # read the data 
         self.filename = path_to_file.stem
-        self.fs, self.fc, self.samples = self.parse_file(path_to_file)
-
-        # derived perameters
-        self.num_samples = len(self.samples)
-        self.time_vec = np.arange(self.num_samples) / self.fs
-        self.dur = self.time_vec[-1]
     
 
-    def parse_file(self, path:Path):
+    def parse_file(self):
 
         # read in the data
-        infile = open(path)
+        infile = open(self.path)
         lines = infile.readlines()
         infile.close()
 
@@ -53,8 +44,12 @@ def main():
 
 
 if __name__ == "__main__":
-
+    
+    from pathlib import Path
     import time
+
+    import numpy as np
+    import matplotlib.pyplot as plt
 
     start_time = time.perf_counter()
     main()

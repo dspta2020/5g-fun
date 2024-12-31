@@ -1,9 +1,3 @@
-from pathlib import Path
-
-import numpy as np 
-import scipy.signal
-
-
 class WaveformGenerator:
 
     def __init__(self, fs, dur):
@@ -33,7 +27,11 @@ def main():
 
 if __name__ == "__main__":
 
+    from pathlib import Path
     import time
+
+    import numpy as np 
+    import scipy.signal
 
     print(f"Running File: {Path(__file__).name}")
 
