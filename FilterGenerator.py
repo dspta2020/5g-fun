@@ -1,3 +1,5 @@
+import numpy as np
+
 class FilterGenerator:
 
     def __init__(self, cutoff, sampling_rate, order):
