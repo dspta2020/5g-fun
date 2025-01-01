@@ -1,3 +1,7 @@
+from pathlib import Path
+import numpy as np
+
+
 class DataReader:
 
     def __init__(self, path_to_file:Path):

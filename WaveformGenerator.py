@@ -1,3 +1,8 @@
+import numpy as np 
+import scipy.fft
+
+from FilterGenerator import FilterGenerator
+
 class WaveformGenerator:
 
     def __init__(self, fs, dur):

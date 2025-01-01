@@ -15,7 +15,7 @@ class FilterGenerator:
         
         # filter response
         h = np.zeros((self.N, 1))
-
+        
         for n in np.arange(self.N):
             if n != self.midpoint:
                 # sinc function filter formula 

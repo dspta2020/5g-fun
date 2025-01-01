@@ -3,13 +3,13 @@ import time
 
 import numpy as np 
 import matplotlib.pyplot as plt
-import scipy
 import scipy.fft
 import scipy.signal 
 
 from DataReader import DataReader
 from FreqGscnMapper import FreqGscnMapper
 from WaveformGenerator import WaveformGenerator
+from FilterGenerator import FilterGenerator
 
 def main():
 
@@ -24,7 +24,6 @@ def main():
     dur = (end_sample / fs - start_sample / fs)
     num_samples = end_sample - start_sample
     waveform = waveform[int(start_sample):int(end_sample)]
-
 
     # maybe want to increase the bandwidth though
     # i think by 8x is reasonable... its a common rate 
@@ -56,20 +55,25 @@ def main():
     mix_ind = 120
     mixing_freq = (freq_candidates[mix_ind] - fc)
     Lo = np.exp(1j * 2 * np.pi * mixing_freq * np.arange(len(waveform)) / fs_new)
-    waveform = waveform * Lo
+    waveform = (waveform / max(abs(waveform))) * Lo
 
     #############################################################################################################################
     # from here we'll have the mixed waveform to be at the freq we want 
     # then we can a also have some band limited noise and other waveforms in there
-    
+    Gen = WaveformGenerator(fs_new, dur)
+    noise = Gen.make_band_limited_noise(5e6, int(2**np.ceil(np.log2(len(waveform)))))
+    Lo = np.exp(1j * 2 * np.pi * 0 * np.arange(len(waveform)) / fs_new).reshape(-1,1)
+
+    # waveform += (noise * Lo)
+
 
     fig = plt.figure()
     window_size = 4096
     stft = scipy.signal.ShortTimeFFT(np.hamming(window_size), hop=window_size//2, fs=fs_new, fft_mode='centered', mfft=8192)
-    mag = 20*np.log10(abs(stft.spectrogram(waveform.flatten())))
+    mag = 20*np.log10(abs(stft.spectrogram(noise.flatten())))
     freqs = np.arange(-stft.f_pts/2, stft.f_pts/2) * (fs_new/stft.f_pts)
 
-    plt.pcolormesh(np.linspace(0, len(waveform)/fs_new*1e3, mag.shape[1]), freqs*1e-6, mag, shading='auto')
+    plt.pcolormesh(np.linspace(0, len(noise)/fs_new*1e3, mag.shape[1]), freqs*1e-6, mag, shading='auto')
     # for gscn_freq in freq_candidates:
     #     plt.axhline((gscn_freq - fc)*1e-6, color='r', linewidth=2)
     plt.ylabel('Frequency [MHz]')
