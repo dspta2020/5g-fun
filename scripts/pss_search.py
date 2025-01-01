@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
 
-from DataReader import DataReader
+from FileHandler import FileHandler
 from WaveformGenerator import WaveformGenerator
 from FreqGscnMapper import FreqGscnMapper
 from ssb_testing import make_pss_waveform
@@ -16,7 +16,7 @@ def main():
     path_to_data = Path(__file__).parent / 'data' / '954_7680KSPS_srsRAN_Project_gnb_short.txt'
 
     # call the data reader and grab the data
-    reader = DataReader(path_to_file=path_to_data)
+    reader = FileHandler(path_to_file=path_to_data)
     data = reader.samples
     fs = reader.fs
     fc = reader.fc

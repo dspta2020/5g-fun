@@ -4,6 +4,10 @@
 *.md
 *.html
 
+# dont want to save off the bin files.... 
+# can use the scripts to generate them locally...
+*.bin
+
 # keep the readme
 !README.md
 

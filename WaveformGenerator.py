@@ -1,8 +1,6 @@
 import numpy as np 
 import scipy.fft
 
-from FilterGenerator import FilterGenerator
-
 class WaveformGenerator:
 
     def __init__(self, fs, dur):
@@ -24,21 +22,6 @@ class WaveformGenerator:
         t = np.arange(self.num_samples) / self.fs
         
         return np.exp(1j * 2*np.pi * (1/2*slope*t**2 + f0*t))
-    
-    def make_band_limited_noise(self, cutoff, order):
-
-        filter = FilterGenerator(cutoff=cutoff, sampling_rate=self.fs, order=order).make_low_pass_filter()
-        noise = (np.random.randn(self.num_samples, 1) + 1j * np.random.randn(self.num_samples, 1)) / np.sqrt(2)
-
-        nFFT = order
-
-        filter_F = scipy.fft.fftshift(scipy.fft.fft(filter, nFFT, 0), 0)
-        noise_F = scipy.fft.fftshift(scipy.fft.fft(noise, nFFT, 0), 0)
-
-        filtered_noise_F = filter_F * noise_F 
-        filtered_noise = scipy.fft.ifft(scipy.fft.ifftshift(filtered_noise_F, 0), nFFT, 0)
-
-        return filtered_noise[nFFT//2:nFFT//2 + int(self.num_samples)]
 
 
 def main():
@@ -77,7 +60,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt 
     import scipy.fft
 
-    from FilterGenerator import FilterGenerator
+    from scratch.FilterGenerator import FilterGenerator
 
     print(f"Running File: {Path(__file__).name}")
 

@@ -2,7 +2,7 @@ from pathlib import Path
 import numpy as np
 
 
-class DataReader:
+class FileHandler:
 
     def __init__(self, path_to_file:Path):
         '''
@@ -36,7 +36,7 @@ def main():
 
     path_to_data = Path(__file__).parent / '954_7680KSPS_srsRAN_Project_gnb_short.txt'
 
-    reader = DataReader(path_to_data)
+    reader = FileHandler(path_to_data)
     data = reader.samples
     fs = reader.fs 
     fc = reader.fc
