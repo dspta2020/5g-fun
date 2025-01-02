@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from scipy.fft import fft, fftshift, ifft, ifftshift
 from scipy.signal import ShortTimeFFT
 
-from FileHandler import FileHandler
-from FreqGscnMapper import FreqGscnMapper
+from classes.FileHandler import FileHandler
+from classes.FreqGscnMapper import FreqGscnMapper
 
 
 def write_data_to_bin(outfile_path, data):
@@ -83,7 +83,7 @@ def main():
     waveform_interleved[1::2] = np.imag(waveform)
 
     # write to a bin file in 4 byte floats 
-    outfile_name = f'fs{fs*1e-6:0.2f}_fc{(shift_freq+fc)*1e-6:0.2f}_data.bin'
+    outfile_name = f'fs{fs*1e-6:0.2f}_fc{(fc)*1e-6:0.2f}_shift{candidates_offsets[shift_freq]*1e-6:0.2f}_data.bin'
     outfile_path = Path(f'{__file__}').parent / 'data' / outfile_name
 
     # okay now we want to save off the waveform
