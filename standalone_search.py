@@ -239,8 +239,8 @@ def PlotSpectrogram(ax, window_size, waveform, fs):
     time_vec = np.linspace(0, len(waveform)/fs, int(mag.shape[1]))
 
     ax.pcolormesh(time_vec*1e-3, freqs*1e-6, mag, shading='auto')
-    ax.ylabel('Frequency [MHz]')
-    ax.xlabel('Time [sec]')
+    ax.set_ylabel('Frequency [MHz]')
+    ax.set_xlabel('Time [sec]')
 
 
 def main():
@@ -322,7 +322,7 @@ def main():
         # okay it might just be that we have really small windows
         spectrogram_ax.clear()
         PlotSpectrogram(spectrogram_ax, 1024, waveform, fs)
-        for time in [start_ind/fs, end_ind/fs]:
+        for time in [(start_ind/fs)*1e-3, (end_ind/fs)*1e-3]:
             plt.axvline(time, color='r', linewidth=2)
         spectrogram_ax.set_title(f'Window {nth_window} of {num_windows}')
 
@@ -356,6 +356,7 @@ def main():
         correlation_ax.plot(abs(correlated_data))
         correlation_ax.set_xlabel('Lag')
         correlation_ax.set_ylabel('Correlation')
+        correlation_ax.set_ylim([0,100])
         correlation_ax.set_title(f'Window {nth_window} of {num_windows}')
         
         # quick pause to see the plots
