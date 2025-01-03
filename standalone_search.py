@@ -3,6 +3,7 @@ import time
 
 import numpy as np 
 from scipy.fft import fft, fftshift, ifft, ifftshift
+from scipy.signal import ShortTimeFFT
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -227,6 +228,21 @@ def MakeLowPassFilter(fs, fc, N):
     
     return h
 
+def PlotSpectrogram(ax, window_size, waveform, fs):
+
+    window_size = window_size
+    stft = ShortTimeFFT(np.hamming(window_size), hop=window_size//2, fs=fs, fft_mode='centered', mfft=2048)
+
+    # get the plotted components
+    mag = 20*np.log10(stft.spectrogram(waveform.flatten()))
+    freqs = np.arange(-stft.f_pts/2, stft.f_pts/2) * (fs/stft.f_pts)
+    time_vec = np.linspace(0, len(waveform)/fs, int(mag.shape[1]))
+
+    ax.pcolormesh(time_vec*1e-3, freqs*1e-6, mag, shading='auto')
+    ax.ylabel('Frequency [MHz]')
+    ax.xlabel('Time [sec]')
+
+
 def main():
     
     # get the path to the data
@@ -249,14 +265,14 @@ def main():
     nIFFT = fs / subcarrier_spacing
 
     # make a PSS match filter
-    Nid_2 = 2
+    Nid_2 = 1
     match_filter = MakePssWaveform(Nid_2, nIFFT) * nIFFT # this will be at baseband
 
     # setup the FFT of the waveform
     # (freq_candidates - fc) / 4e3 # i think should be able to get away with 4 kHz spacing as minimum FFT size
     # (127 * 15e3) / desired_bin_spacing # also out of curiosity how many bins is the match filter with this bin spacing
     
-    desired_bin_spacing = 4e3  # can be optimized later
+    desired_bin_spacing = 0.5e3  # can be optimized later
     nFFT = fs / desired_bin_spacing
     shifts = offset_candidates / desired_bin_spacing
     shifts = ((shifts + nFFT)).astype(int).reshape(-1,1) # these are the freq bin inds we need to grab
@@ -288,6 +304,11 @@ def main():
     match_filter_F = fftshift(fft(match_filter, int(nFFT), 0), 0)
     filter_F = fftshift(fft(filter_coeffs, int(nFFT), 0), 0)
     win = np.hamming(nFFT)
+    print(f'Based on window size of {window_len} the number of windows to process is {num_windows}')
+
+    # setup figs for plotting
+    spectrogram_fig, spectrogram_ax = plt.subplots()
+    correlation_fig, correlation_ax = plt.subplots()
 
     for nth_window in range(int(num_windows)):
 
@@ -297,17 +318,29 @@ def main():
 
         # grab the time data
         input_data = waveform[start_ind:end_ind] * win
+
+        # okay it might just be that we have really small windows
+        spectrogram_ax.clear()
+        PlotSpectrogram(spectrogram_ax, 1024, waveform, fs)
+        for time in [start_ind/fs, end_ind/fs]:
+            plt.axvline(time, color='r', linewidth=2)
+        spectrogram_ax.set_title(f'Window {nth_window} of {num_windows}')
+
         # FFT the data
         input_data_F = fftshift(fft(input_data, int(nFFT), 0), 0)
         # rotate the frequencies with the circshift matrix
         shifted_data_F = input_data_F[circshift_mat]
 
         # can add a filtering step later
-        shifted_data_F = shifted_data_F# * filter_F
+        shifted_data_F = shifted_data_F * filter_F
 
-        plt.figure(2)
-        plt.plot(freqs, 20*np.log10(abs(shifted_data_F)))
-        plt.legend([f'{offset_candidates[n]*1e-6:0.3f} MHz Shift' for n, _ in enumerate(offset_candidates)])
+        # keep this for debugging for now
+        if 0:
+            plt.figure(2)
+            plt.plot(freqs, 20*np.log10(abs(shifted_data_F)))
+            # plt.legend([f'{offset_candidates[n]*1e-6:0.3f} MHz Shift' for n, _ in enumerate(offset_candidates)])
+            plt.title(f'Window {nth_window} of {num_windows}')
+
 
         # also normalize the 
         input_data_energy = sum(abs(shifted_data_F)**2)
@@ -317,12 +350,19 @@ def main():
         correlated_data_F = shifted_data_F * np.conj(match_filter_F)
 
         # ifft the filtered data
-        correlated_data = ifft(ifftshift(correlated_data_F, 0), int(nFFT), 0) #* nFFT / np.sqrt(input_data_energy * match_filter_energy).reshape(-1,1).T
+        correlated_data = ifft(ifftshift(correlated_data_F, 0), int(nFFT), 0) * nFFT / np.sqrt(input_data_energy * match_filter_energy).reshape(-1,1).T
 
-        plt.figure(1)
-        plt.plot(abs(correlated_data))
-        plt.show()
+        correlation_ax.clear()
+        correlation_ax.plot(abs(correlated_data))
+        correlation_ax.set_xlabel('Lag')
+        correlation_ax.set_ylabel('Correlation')
+        correlation_ax.set_title(f'Window {nth_window} of {num_windows}')
+        
+        # quick pause to see the plots
+        plt.pause(0.5)
 
+    # keep this here to make sure that the final plot stays up
+    plt.show()
 
 
 if __name__ == "__main__":
