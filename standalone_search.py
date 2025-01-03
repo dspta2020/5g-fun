@@ -244,6 +244,8 @@ def PlotSpectrogram(ax, window_size, waveform, fs):
 
 
 def main():
+
+    specgram_flag = 0
     
     # get the path to the data
     path_to_data = Path('data\954_7680KSPS_srsRAN_Project_gnb_short.txt')
@@ -307,7 +309,8 @@ def main():
     print(f'Based on window size of {window_len} the number of windows to process is {num_windows}')
 
     # setup figs for plotting
-    spectrogram_fig, spectrogram_ax = plt.subplots()
+    if specgram_flag:
+        spectrogram_fig, spectrogram_ax = plt.subplots()
     correlation_fig, correlation_ax = plt.subplots()
 
     for nth_window in range(int(num_windows)):
@@ -319,12 +322,13 @@ def main():
         # grab the time data
         input_data = waveform[start_ind:end_ind] * win
 
-        # okay it might just be that we have really small windows
-        spectrogram_ax.clear()
-        PlotSpectrogram(spectrogram_ax, 1024, waveform, fs)
-        for time in [(start_ind/fs)*1e-3, (end_ind/fs)*1e-3]:
-            plt.axvline(time, color='r', linewidth=2)
-        spectrogram_ax.set_title(f'Window {nth_window} of {num_windows}')
+        if specgram_flag:
+            # okay it might just be that we have really small windows
+            spectrogram_ax.clear()
+            PlotSpectrogram(spectrogram_ax, 1024, waveform, fs)
+            for time in [(start_ind/fs)*1e-3, (end_ind/fs)*1e-3]:
+                plt.axvline(time, color='r', linewidth=2)
+            spectrogram_ax.set_title(f'Window {nth_window} of {num_windows}')
 
         # FFT the data
         input_data_F = fftshift(fft(input_data, int(nFFT), 0), 0)
@@ -341,7 +345,6 @@ def main():
             # plt.legend([f'{offset_candidates[n]*1e-6:0.3f} MHz Shift' for n, _ in enumerate(offset_candidates)])
             plt.title(f'Window {nth_window} of {num_windows}')
 
-
         # also normalize the 
         input_data_energy = sum(abs(shifted_data_F)**2)
         match_filter_energy = sum(abs(match_filter)**2)
@@ -352,6 +355,7 @@ def main():
         # ifft the filtered data
         correlated_data = ifft(ifftshift(correlated_data_F, 0), int(nFFT), 0) * nFFT / np.sqrt(input_data_energy * match_filter_energy).reshape(-1,1).T
 
+        # update the correlation plot
         correlation_ax.clear()
         correlation_ax.plot(abs(correlated_data))
         correlation_ax.set_xlabel('Lag')
