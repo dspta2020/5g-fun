@@ -249,7 +249,7 @@ def main():
     nIFFT = fs / subcarrier_spacing
 
     # make a PSS match filter
-    Nid_2 = 1
+    Nid_2 = 2
     match_filter = MakePssWaveform(Nid_2, nIFFT) * nIFFT # this will be at baseband
 
     # setup the FFT of the waveform
@@ -268,7 +268,7 @@ def main():
     # need to double check the circle shifts in python.. i know in matlab it needs a -1 then +1
     freqs = np.arange(-nFFT/2,nFFT/2) * (fs/nFFT)
     # freqs[circshift_mat[int(nFFT // 2)]]
-    # offset_candidates
+    # offset_candidates * 1e-6
 
     # now need to set up the loop to grab the data and FFT it
     percent_overlap = 0 # incase the PSS splits the window
@@ -303,10 +303,11 @@ def main():
         shifted_data_F = input_data_F[circshift_mat]
 
         # can add a filtering step later
-        shifted_data_F = shifted_data_F * filter_F
+        shifted_data_F = shifted_data_F# * filter_F
 
         plt.figure(2)
-        plt.plot(20*np.log10(abs(shifted_data_F)))
+        plt.plot(freqs, 20*np.log10(abs(shifted_data_F)))
+        plt.legend([f'{offset_candidates[n]*1e-6:0.3f} MHz Shift' for n, _ in enumerate(offset_candidates)])
 
         # also normalize the 
         input_data_energy = sum(abs(shifted_data_F)**2)
@@ -316,7 +317,7 @@ def main():
         correlated_data_F = shifted_data_F * np.conj(match_filter_F)
 
         # ifft the filtered data
-        correlated_data = ifft(ifftshift(correlated_data_F, 0), int(nFFT), 0) / np.sqrt(input_data_energy * match_filter_energy).reshape(-1,1).T
+        correlated_data = ifft(ifftshift(correlated_data_F, 0), int(nFFT), 0) #* nFFT / np.sqrt(input_data_energy * match_filter_energy).reshape(-1,1).T
 
         plt.figure(1)
         plt.plot(abs(correlated_data))
