@@ -4,9 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
 
-from FileHandler import FileHandler
-from WaveformGenerator import WaveformGenerator
-from FreqGscnMapper import FreqGscnMapper
+from classes.FileHandler import FileHandler
+from classes.WaveformGenerator import WaveformGenerator
+from classes.FreqGscnMapper import FreqGscnMapper
 from ssb_testing import make_pss_waveform
 
 

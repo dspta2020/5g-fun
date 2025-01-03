@@ -5,7 +5,7 @@ import scipy
 import matplotlib.pyplot as plt
 
 from ssb_testing import get_pss_symbols, make_pss_waveform, make_resource_grid, get_pss_inds, rg_to_waveform
-from FreqGscnMapper import FreqGscnMapper
+from classes.FreqGscnMapper import FreqGscnMapper
 
 def plot_spectrogram(waveform, fs, symbol_time, window_size):
 

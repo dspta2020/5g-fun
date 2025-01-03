@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 import scipy.fft
 import scipy.signal 
 
-from FileHandler import FileHandler
-from FreqGscnMapper import FreqGscnMapper
-from WaveformGenerator import WaveformGenerator
+from classes.FileHandler import FileHandler
+from classes.FreqGscnMapper import FreqGscnMapper
+from classes.WaveformGenerator import WaveformGenerator
 from scratch.FilterGenerator import FilterGenerator
 
 def main():
